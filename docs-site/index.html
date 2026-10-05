@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel econômico + chat em tempo real — Kauã Hiro Mizumoto</title>
+<meta name="description" content="Projeto de engenharia full-stack: painel de indicadores do Banco Central do Brasil e chat em tempo real com assistente @bcb, na mesma aplicação Next.js.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink-950: #0a0e1a;
+    --ink-900: #0d1220;
+    --ink-800: #141b2e;
+    --ink-700: #1b2440;
+    --ink-600: #2a3350;
+    --paper-100: #edeff4;
+    --paper-400: #9aa3bd;
+    --gold-500: #d9a441;
+    --gold-400: #e4bb6b;
+    --display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+    --body: "Inter", ui-sans-serif, system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "Cascadia Code", Menlo, monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--ink-950);
+    color: var(--paper-100);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.65;
+    overflow-x: hidden;
+  }
+
+  .wrap { max-width: 68rem; margin: 0 auto; padding: 0 1.5rem; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold-500);
+    margin: 0;
+  }
+
+  h1, h2, h3 { font-family: var(--display); letter-spacing: -0.02em; line-height: 1.15; }
+
+  /* ---------- hero ---------- */
+
+  header.hero { border-bottom: 1px solid var(--ink-700); padding: 5.5rem 0 4rem; }
+
+  h1 { font-size: clamp(2.1rem, 6vw, 3.9rem); font-weight: 600; margin: 1.25rem 0 0; max-width: 46rem; }
+  h1 .accent { color: var(--gold-500); }
+
+  .lede { color: var(--paper-400); font-size: clamp(1rem, 2.1vw, 1.15rem); max-width: 42rem; margin: 1.5rem 0 0; }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 0.85rem; margin-top: 2.5rem; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-family: var(--mono); font-size: 0.82rem; letter-spacing: 0.04em;
+    padding: 0.7rem 1.15rem; border-radius: 0.55rem;
+    text-decoration: none; border: 1px solid var(--ink-600);
+    color: var(--paper-100); background: var(--ink-900);
+    transition: border-color 180ms cubic-bezier(0.2, 0, 0, 1),
+                background-color 180ms cubic-bezier(0.2, 0, 0, 1);
+  }
+  .btn:hover { border-color: var(--gold-500); background: var(--ink-800); }
+  .btn.primary { background: var(--gold-500); color: var(--ink-950); border-color: var(--gold-500); font-weight: 500; }
+  .btn.primary:hover { background: var(--gold-400); border-color: var(--gold-400); }
+  .btn:focus-visible { outline: 2px solid var(--gold-400); outline-offset: 2px; }
+
+  .btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
+  .btn[aria-disabled="true"]:hover { border-color: var(--ink-600); background: var(--ink-900); }
+
+  /* ---------- seções ---------- */
+
+  section { padding: 4.5rem 0; border-bottom: 1px solid var(--ink-700); }
+  section > .wrap > h2 { font-size: clamp(1.5rem, 3.4vw, 2.1rem); font-weight: 600; margin: 0.9rem 0 0; }
+  section p.intro { color: var(--paper-400); max-width: 44rem; margin: 1rem 0 0; }
+
+  .grid { display: grid; gap: 1.25rem; margin-top: 2.5rem; }
+  @media (min-width: 46rem) { .grid.two { grid-template-columns: 1fr 1fr; } }
+
+  .card {
+    border: 1px solid var(--ink-700);
+    background: var(--ink-900);
+    border-radius: 0.85rem;
+    padding: 1.75rem;
+  }
+  .card h3 { font-size: 1.2rem; font-weight: 600; margin: 0.8rem 0 0; }
+  .card p { color: var(--paper-400); font-size: 0.94rem; margin: 0.7rem 0 0; }
+  .card ul { color: var(--paper-400); font-size: 0.94rem; margin: 0.9rem 0 0; padding-left: 1.1rem; }
+  .card li { margin-top: 0.35rem; }
+
+  /* ---------- decisões ---------- */
+
+  .decision { border-left: 2px solid var(--ink-600); padding: 0 0 0 1.4rem; margin-top: 2.25rem; }
+  .decision:first-of-type { margin-top: 2.5rem; }
+  .decision h3 { font-size: 1.05rem; font-weight: 600; margin: 0; }
+  .decision p { color: var(--paper-400); font-size: 0.94rem; margin: 0.55rem 0 0; max-width: 46rem; }
+
+  /* ---------- stack ---------- */
+
+  .table-scroll { overflow-x: auto; margin-top: 2.5rem; }
+  table { border-collapse: collapse; width: 100%; min-width: 30rem; font-size: 0.92rem; }
+  th, td { text-align: left; padding: 0.8rem 1rem; border-bottom: 1px solid var(--ink-700); }
+  th {
+    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--paper-400); font-weight: 500;
+  }
+  td { color: var(--paper-100); }
+  td.muted { color: var(--paper-400); }
+
+  /* ---------- nota técnica ---------- */
+
+  .note {
+    margin-top: 2.5rem; border: 1px solid var(--ink-700); border-left: 3px solid var(--gold-500);
+    background: var(--ink-900); border-radius: 0.6rem; padding: 1.5rem 1.75rem;
+  }
+  .note h3 { font-size: 1.05rem; font-weight: 600; margin: 0.7rem 0 0; }
+  .note p { color: var(--paper-400); font-size: 0.94rem; margin: 0.7rem 0 0; }
+  code {
+    font-family: var(--mono); font-size: 0.86em;
+    background: var(--ink-800); border: 1px solid var(--ink-700);
+    padding: 0.1em 0.38em; border-radius: 0.3em; color: var(--gold-400);
+  }
+
+  /* ---------- rodapé ---------- */
+
+  footer { padding: 3rem 0 4rem; }
+  footer p { color: var(--paper-400); font-size: 0.88rem; margin: 0; }
+  footer a { color: var(--paper-100); text-decoration: none; border-bottom: 1px solid var(--ink-600); }
+  footer a:hover { border-color: var(--gold-500); }
+  .footer-row { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; align-items: baseline; justify-content: space-between; }
+
+  /* ---------- entrada ----------
+     Entrada única por bloco, 220ms, deslocamento curto. Sem stagger por item,
+     sem blur, sem início em scale(0) — ver seção 4 do AGENTS.md. */
+
+  .reveal { opacity: 0; transform: translateY(12px); }
+  .reveal.in {
+    opacity: 1; transform: none;
+    transition: opacity 220ms cubic-bezier(0.2, 0, 0, 1),
+                transform 220ms cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+    .reveal { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Projeto de portfólio — engenharia full-stack</p>
+    <h1>Dados econômicos de verdade. <span class="accent">Conversas em tempo real.</span></h1>
+    <p class="lede">
+      Um painel que consome a API pública do Banco Central do Brasil e transforma séries da
+      Selic, CDI, IPCA e dólar em leitura útil — ao lado de um chat multi-sala sobre
+      WebSockets, com presença, indicador de digitação e um assistente que responde com os
+      mesmos números do painel.
+    </p>
+    <div class="actions">
+      <a class="btn primary" id="live" href="#hospedagem" aria-disabled="true">
+        App ao vivo — em implantação
+      </a>
+      <a class="btn" href="https://github.com/kaua-hiro/painel-economico-chat">
+        Código no GitHub
+      </a>
+      <a class="btn" href="https://github.com/kaua-hiro/painel-economico-chat/blob/main/README.md">
+        Decisões de arquitetura
+      </a>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">O que é</p>
+    <h2>Duas capacidades que costumam ser pedidas separadas</h2>
+    <p class="intro">
+      Consumo de uma API pública real transformada em informação, e comunicação em tempo
+      real sobre WebSockets — na mesma aplicação Next.js, num processo só.
+    </p>
+
+    <div class="grid two reveal">
+      <article class="card">
+        <p class="eyebrow">Painel</p>
+        <h3>Indicadores do Banco Central</h3>
+        <p>
+          Selic, CDI, IPCA e dólar PTAX lidos do SGS — o Sistema Gerenciador de Séries
+          Temporais do BCB — com tendência, histórico e leituras derivadas.
+        </p>
+        <ul>
+          <li>Juro real: Selic descontada a inflação</li>
+          <li>Distância do IPCA acumulado até a meta</li>
+          <li>Rendimento de um valor aplicado no CDI</li>
+          <li>Oscilação cambial no período</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <p class="eyebrow">Chat</p>
+        <h3>Salas em tempo real com assistente</h3>
+        <p>
+          Socket.IO sobre servidor HTTP próprio, histórico persistido, lista de presença e
+          indicador de digitação. O assistente <code>@bcb</code> é o que amarra as duas
+          metades do projeto.
+        </p>
+        <ul>
+          <li>“Como está a Selic?” → valor, variação e data da leitura</li>
+          <li>“Quanto rendem R$ 5.000 no CDI?” → cálculo anualizado</li>
+          <li>“A inflação está acima da meta?” → IPCA contra a meta</li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">Engenharia</p>
+    <h2>Decisões que valem explicação</h2>
+    <p class="intro">
+      O que diferencia o projeto não é a lista de tecnologias, e sim o porquê de cada
+      escolha — incluindo as limitações declaradas em vez de escondidas.
+    </p>
+
+    <div class="reveal">
+      <div class="decision">
+        <h3>Servidor customizado em vez de rota de API</h3>
+        <p>
+          Socket.IO precisa de um servidor HTTP de longa duração para manter as conexões
+          abertas, e rotas do App Router são efêmeras. O <code>server.ts</code> cria o
+          servidor, entrega as requisições ao handler do Next e anexa o Socket.IO em
+          <code>/api/socket</code>. Um processo, um deploy.
+        </p>
+      </div>
+
+      <div class="decision">
+        <h3>Resiliência contra as falhas reais do gateway do BCB</h3>
+        <p>
+          O gateway às vezes responde um envelope XML de erro com status HTTP 200, e o
+          endpoint de últimos valores rejeita janelas acima de 20 pontos. O serviço valida
+          o corpo como JSON antes de aceitá-lo, tenta de novo com backoff e usa
+          <code>Promise.allSettled</code> no agregador: uma série fora do ar não derruba o
+          painel inteiro.
+        </p>
+      </div>
+
+      <div class="decision">
+        <h3>Presença em memória, mensagem em banco</h3>
+        <p>
+          Quem está online é estado efêmero da conexão e vive num <code>Map</code> do
+          servidor. Mensagem é fato: vai para o banco via Prisma e volta como histórico
+          quando alguém entra na sala, com retenção de 7 dias.
+        </p>
+      </div>
+
+      <div class="decision">
+        <h3>O assistente tem dois motores, e nenhum deles é obrigatório</h3>
+        <p>
+          O motor determinístico interpreta a pergunta e calcula a resposta direto das
+          séries — funciona sem nenhuma chave de API e continua sendo a rede de segurança
+          quando a chamada ao modelo falha ou estoura o tempo. Com
+          <code>ANTHROPIC_API_KEY</code> configurada, a resposta passa a vir do modelo,
+          ainda restrita ao snapshot das séries. A interface marca a origem de cada
+          resposta, para nunca passar por modelo o que foi calculado em código.
+        </p>
+      </div>
+
+      <div class="decision">
+        <h3>O WebSocket é tratado como superfície hostil</h3>
+        <p>
+          É a única entrada de terceiro do sistema, e o cliente pode emitir qualquer
+          payload, em qualquer ordem, na velocidade que quiser. Validação de tipo, tamanho
+          e allowlist de sala no servidor; rate limiting por conexão e por evento; limite
+          de conexões simultâneas por IP; verificação de origem no handshake contra CSWSH.
+          Em produção o servidor recusa subir sem <code>ALLOWED_ORIGINS</code> — falha
+          fechada. Nenhum apelido, IP ou conteúdo de mensagem vai para o log.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">Stack</p>
+    <h2>Camadas e escolhas</h2>
+
+    <div class="table-scroll reveal">
+      <table>
+        <thead>
+          <tr><th scope="col">Camada</th><th scope="col">Escolha</th><th scope="col">Por quê</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Framework</td><td>Next.js 16 (App Router) + React 19</td><td class="muted">Server Components para o painel, com ISR de uma hora</td></tr>
+          <tr><td>Linguagem</td><td>TypeScript</td><td class="muted">Contratos de domínio explícitos entre as camadas</td></tr>
+          <tr><td>Tempo real</td><td>Socket.IO em servidor Node próprio</td><td class="muted">Conexões de longa duração no mesmo processo do Next</td></tr>
+          <tr><td>Persistência</td><td>Prisma</td><td class="muted">SQLite em desenvolvimento, Postgres em produção</td></tr>
+          <tr><td>Gráficos</td><td>Recharts</td><td class="muted">Carregado sob demanda, abaixo da dobra</td></tr>
+          <tr><td>Estilo</td><td>Tailwind CSS v4</td><td class="muted">Tokens no CSS, sem arquivo de configuração</td></tr>
+          <tr><td>Dados</td><td>API de dados abertos do BCB</td><td class="muted">Séries 432, 12, 433 e 1 — sem autenticação</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="hospedagem">
+  <div class="wrap">
+    <p class="eyebrow">Nota técnica</p>
+    <h2>Por que esta página não é o app</h2>
+
+    <div class="note reveal">
+      <p class="eyebrow">Incompatibilidade de modelo de hospedagem</p>
+      <h3>GitHub Pages serve arquivos estáticos — e este projeto precisa de processo</h3>
+      <p>
+        O chat depende de um processo Node vivo mantendo as conexões WebSocket abertas, o
+        painel e o endpoint do ticker são renderizados sob demanda, e as mensagens são
+        gravadas em banco. No Pages não há Node, não há processo persistente e o
+        filesystem é somente leitura: o chat, o assistente e o ticker não funcionariam.
+      </p>
+      <p>
+        Então a divisão é deliberada: o <strong>app completo</strong> roda em plataforma
+        com processo persistente, e o Pages hospeda <strong>esta vitrine</strong>. A
+        limitação está escrita aqui porque reconhecer a restrição da plataforma faz parte
+        da engenharia — o registro completo está no
+        <a href="https://github.com/kaua-hiro/painel-economico-chat/issues/21" style="color:var(--gold-400)">issue de deploy</a>.
+      </p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap footer-row">
+    <p>
+      Kauã Hiro Mizumoto — desenvolvimento de software, integrações e automação.
+    </p>
+    <p>
+      <a href="https://github.com/kaua-hiro/painel-economico-chat">Repositório</a>
+      ·
+      <a href="https://dadosabertos.bcb.gov.br/">Fonte dos dados: BCB</a>
+    </p>
+  </div>
+</footer>
+
+<script>
+  // Entrada por bloco, uma vez, quando entra no viewport.
+  // A preferência de movimento reduzido é consultada no JS também: o bloco
+  // @media do CSS cobre a transição, mas o observer nem precisa rodar.
+  (function () {
+    var reduz = window.matchMedia("(prefers-reduced-motion: reduce)");
+    var blocos = document.querySelectorAll(".reveal");
+
+    if (reduz.matches || !("IntersectionObserver" in window)) {
+      blocos.forEach(function (b) { b.classList.add("in"); });
+      return;
+    }
+
+    var obs = new IntersectionObserver(function (entradas) {
+      entradas.forEach(function (e) {
+        if (e.isIntersecting) {
+          e.target.classList.add("in");
+          obs.unobserve(e.target);
+        }
+      });
+    }, { rootMargin: "0px 0px -10% 0px", threshold: 0.1 });
+
+    blocos.forEach(function (b) { obs.observe(b); });
+  })();
+</script>
+
+</body>
+</html>

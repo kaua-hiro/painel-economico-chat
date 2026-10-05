@@ -1,0 +1,48 @@
+name: Vitrine no GitHub Pages
+
+# Publica docs-site/ no GitHub Pages. Deploy e consequencia de merge em main,
+# como manda a secao 2.5 do AGENTS.md.
+#
+# Esta vitrine e estatica de proposito: o app completo precisa de processo Node
+# persistente para o Socket.IO e nao roda no Pages (ver issue #21 e #23).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs-site/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Nao cancela um deploy em andamento: publicacao pela metade e pior que
+# publicacao atrasada.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Pages
+        uses: actions/configure-pages@v5
+
+      - name: Empacotar a vitrine
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs-site
+
+      - name: Publicar
+        id: deploy
+        uses: actions/deploy-pages@v4
