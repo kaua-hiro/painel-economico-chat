@@ -38,9 +38,10 @@ yarn-error.log*
 /prisma/*.db
 /prisma/*.db-journal
 
-# artefatos de ferramenta de IA (next dev recria o AGENTS.md a cada execucao)
-AGENTS.md
-CLAUDE.md
+# diretorio local de uma ferramenta especifica: a skill versionada do projeto
+# fica em .agents/skills (local universal, lido por qualquer agente) e o
+# .claude/skills e apenas um symlink gerado na maquina de quem instalou
+.claude/
 
 # vercel
 .vercel

@@ -1,0 +1,36 @@
+#!/bin/sh
+# Impede que autoria de agente de IA entre no historico deste repositorio.
+#
+# Por que por padrao e nao bloqueando todo Co-Authored-By: co-autoria humana
+# real (pair programming) continua legitima; o que nao entra e credito de
+# agente. A lista cobre os agentes atuais e os campos proprietarios que
+# algumas ferramentas injetam sozinhas.
+
+MSG_FILE="$1"
+PADRAO_AGENTE='claude|anthropic|copilot|cursor|codex|chatgpt|openai|gemini|windsurf|devin|\[bot\]|noreply@'
+RUIM=0
+
+# Co-Authored-By apontando para um agente
+if grep -iE '^[[:space:]]*co-authored-by[[:space:]]*:' "$MSG_FILE" \
+   | grep -qiE "$PADRAO_AGENTE"; then
+  echo "commit recusado: Co-Authored-By de agente de IA." >&2
+  grep -inE '^[[:space:]]*co-authored-by[[:space:]]*:' "$MSG_FILE" \
+    | grep -iE "$PADRAO_AGENTE" >&2
+  RUIM=1
+fi
+
+# Trailers proprietarios de ferramenta, recusados sempre
+if grep -qiE '^[[:space:]]*(claude-session|generated-with|generated-by|assisted-by)[[:space:]]*:' "$MSG_FILE"; then
+  echo "commit recusado: trailer proprietario de ferramenta de IA." >&2
+  grep -inE '^[[:space:]]*(claude-session|generated-with|generated-by|assisted-by)[[:space:]]*:' "$MSG_FILE" >&2
+  RUIM=1
+fi
+
+if [ "$RUIM" -ne 0 ]; then
+  echo "" >&2
+  echo "Remova a(s) linha(s) acima da mensagem e tente de novo." >&2
+  echo "Regra documentada na secao 2.3 do AGENTS.md." >&2
+  exit 1
+fi
+
+exit 0
