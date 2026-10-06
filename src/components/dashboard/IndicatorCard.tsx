@@ -2,15 +2,26 @@
 
 import clsx from "clsx";
 import type { IndicatorSummary } from "@/lib/bcb/types";
-import { formatNumber, formatSigned, trendArrow } from "@/lib/format";
+import { formatNumber, formatSigned } from "@/lib/format";
 import { Sparkline } from "./Sparkline";
 
 const TREND_COLOR = {
-  up: "var(--signal-up)",
-  down: "var(--signal-down)",
-  stable: "var(--paper-400)",
+  up: "var(--up)",
+  down: "var(--down)",
+  stable: "var(--muted)",
 } as const;
 
+const TREND_TEXT = {
+  up: "text-up",
+  down: "text-down",
+  stable: "text-muted",
+} as const;
+
+/**
+ * Célula do instrumento. Não é uma caixa com borda própria: os fios vêm do
+ * contêiner `.grid-rules`, e a seleção é marcada por uma barra de 2px no topo,
+ * do mesmo azul do resto — o estado ativo usa a régua, não um preenchimento.
+ */
 export function IndicatorCard({
   indicator,
   selected,
@@ -29,44 +40,54 @@ export function IndicatorCard({
       onClick={onSelect}
       aria-pressed={selected}
       className={clsx(
-        "focus-ring flex flex-col gap-4 rounded-xl border bg-ink-900 p-6 text-left transition-colors",
-        selected ? "border-gold-500" : "border-ink-700 hover:border-ink-600",
+        "focus-ring group relative flex flex-col gap-5 p-6 text-left transition-colors",
+        selected ? "bg-surface" : "bg-paper hover:bg-surface",
       )}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="font-mono text-xs tracking-widest text-paper-400 uppercase">
-            {indicator.label}
-          </p>
-          <p className="mt-1 text-xs leading-snug text-paper-400">{indicator.description}</p>
+      <span
+        aria-hidden
+        className={clsx(
+          "absolute inset-x-0 top-0 h-0.5 transition-colors",
+          selected ? "bg-signal" : "bg-transparent",
+        )}
+      />
+
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="label">{indicator.label}</span>
+        <span className="font-mono text-[0.625rem] text-muted">
+          SGS {indicator.sgsCode}
+        </span>
+      </div>
+
+      <div>
+        <div className="flex items-baseline gap-1.5">
+          <span className="readout text-[2.75rem]">
+            {indicator.prefix}
+            {formatNumber(indicator.current, decimals)}
+          </span>
+          {!indicator.prefix && (
+            <span className="font-mono text-xs text-muted">{indicator.unit}</span>
+          )}
         </div>
-        <span className="font-mono text-[10px] text-ink-600">SGS {indicator.sgsCode}</span>
-      </div>
 
-      <div className="flex items-baseline gap-2">
-        <span className="font-mono tabular text-3xl font-medium text-paper-100">
-          {indicator.prefix}
-          {formatNumber(indicator.current, decimals)}
-        </span>
-        {!indicator.prefix && <span className="text-sm text-paper-400">{indicator.unit}</span>}
-      </div>
-
-      <div className="flex items-center gap-2 text-xs whitespace-nowrap">
-        <span className="font-mono tabular" style={{ color }}>
-          {trendArrow(indicator.trend)}{" "}
-          {indicator.trend === "stable" ? "estável" : formatSigned(indicator.variation, decimals)}
-        </span>
-        <span className="text-paper-400">vs. leitura anterior</span>
+        <p className={clsx("tabular mt-2 font-mono text-xs", TREND_TEXT[indicator.trend])}>
+          {indicator.trend === "stable"
+            ? "estável vs. leitura anterior"
+            : `${formatSigned(indicator.variation, decimals)} vs. leitura anterior`}
+        </p>
       </div>
 
       <Sparkline id={indicator.code} data={indicator.series} color={color} />
 
-      <div className="flex flex-col gap-1 border-t border-ink-700 pt-3 text-[11px] text-paper-400">
-        <span>Atualizado em {indicator.updatedAt}</span>
+      <div className="mt-auto flex flex-col gap-1 border-t border-rule pt-3">
+        <p className="text-xs leading-snug text-muted">{indicator.description}</p>
+        <p className="font-mono text-[0.625rem] text-muted">
+          atualizado em {indicator.updatedAt}
+        </p>
         {indicator.extra && (
-          <span className="font-mono tabular text-gold-400">
+          <p className="tabular font-mono text-[0.6875rem] text-signal">
             {indicator.extra.label}: {indicator.extra.value}
-          </span>
+          </p>
         )}
       </div>
     </button>

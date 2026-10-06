@@ -1,52 +1,100 @@
 @import "tailwindcss";
 
+/*
+ * Direção "Instrumento": um aparelho de precisão para ler a economia
+ * brasileira. Claro, exato, com o dado em primeiro plano. A grade regrada é o
+ * desenho — os fios de 1px não decoram, eles estruturam.
+ */
 :root {
-  --ink-950: #0a0e1a;
-  --ink-900: #0d1220;
-  --ink-800: #141b2e;
-  --ink-700: #1b2440;
-  --ink-600: #2a3350;
-  --paper-100: #edeff4;
-  --paper-400: #9aa3bd;
-  --gold-500: #d9a441;
-  --gold-400: #e4bb6b;
-  --signal-up: #3fbf8f;
-  --signal-down: #e2654b;
+  --paper: #fbfbfc;
+  --surface: #ffffff;
+  --sunk: #f1f2f6;
+  --rule: #dcdee6;
+  --rule-strong: #c3c7d4;
+  --ink: #0e1116;
+  --muted: #5a6072;
+  --signal: #1b35ff;
+  --signal-soft: #e8ebff;
+  --up: #0a7a4e;
+  --down: #c32b42;
 }
 
 @theme inline {
-  --color-ink-950: var(--ink-950);
-  --color-ink-900: var(--ink-900);
-  --color-ink-800: var(--ink-800);
-  --color-ink-700: var(--ink-700);
-  --color-ink-600: var(--ink-600);
-  --color-paper-100: var(--paper-100);
-  --color-paper-400: var(--paper-400);
-  --color-gold-500: var(--gold-500);
-  --color-gold-400: var(--gold-400);
-  --color-signal-up: var(--signal-up);
-  --color-signal-down: var(--signal-down);
-  --font-display: var(--font-space-grotesk);
-  --font-sans: var(--font-inter);
-  --font-mono: var(--font-plex-mono);
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-sunk: var(--sunk);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-signal: var(--signal);
+  --color-signal-soft: var(--signal-soft);
+  --color-up: var(--up);
+  --color-down: var(--down);
+  --font-display: var(--font-archivo);
+  --font-sans: var(--font-instrument);
+  --font-mono: var(--font-dm-mono);
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
-  background: var(--ink-950);
-  color: var(--paper-100);
+  background: var(--paper);
+  color: var(--ink);
   font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
-  background: var(--gold-500);
-  color: var(--ink-950);
+  background: var(--signal);
+  color: var(--surface);
 }
 
-/* Ticker: marquee sinalética construída com os dados reais do BCB */
+/* ---------------------------------------------------------------- tipografia */
+
+/* Rótulo de instrumento: mono, pequeno, muito espaçado. Nomeia o que o número
+   ao lado está medindo — é o que separa "um número grande" de "uma leitura". */
+.label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Leitura: o número em escala de cartaz. Algarismos tabulares para as casas
+   alinharem entre células e não dançarem quando o valor muda. */
+.readout {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ------------------------------------------------------------ grade regrada */
+
+/* Células que dividem fios em vez de caixas flutuando separadas. O fio é
+   desenhado como borda só em dois lados e o contêiner fecha os outros dois,
+   então não há linha dupla no encontro entre células. */
+.grid-rules {
+  border-top: 1px solid var(--rule);
+  border-left: 1px solid var(--rule);
+}
+
+.grid-rules > * {
+  border-right: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+
+/* ----------------------------------------------------------------- ticker */
+
 @keyframes ticker-scroll {
   from {
     transform: translateX(0);
@@ -57,28 +105,55 @@ body {
 }
 
 .ticker-track {
-  animation: ticker-scroll 38s linear infinite;
+  animation: ticker-scroll 46s linear infinite;
 }
 
 .ticker-row:hover .ticker-track {
   animation-play-state: paused;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .ticker-track {
-    animation: none;
+/* -------------------------------------------------------------- entrada */
+
+/* Uma entrada curta por bloco, não por item: stagger em toda lista é a
+   assinatura de interface gerada por IA. 180ms, 6px, easing explícito. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
-.tabular {
-  font-variant-numeric: tabular-nums;
+.rise {
+  animation: rise 180ms cubic-bezier(0.2, 0, 0, 1) both;
 }
+
+/* ------------------------------------------------------------------ foco */
 
 .focus-ring {
   outline: none;
 }
 .focus-ring:focus-visible {
-  outline: 2px solid var(--gold-500);
+  outline: 2px solid var(--signal);
   outline-offset: 2px;
-  border-radius: 6px;
+}
+
+/* ------------------------------------------------- movimento reduzido */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .ticker-track {
+    animation: none;
+  }
 }

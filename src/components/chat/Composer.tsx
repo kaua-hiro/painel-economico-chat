@@ -44,7 +44,7 @@ export function Composer({
         event.preventDefault();
         handleSubmit();
       }}
-      className="flex items-center gap-3 border-t border-ink-700 bg-ink-900 p-4"
+      className="flex items-center gap-2 border-t border-rule bg-surface p-3 sm:p-4"
     >
       <input
         value={value}
@@ -54,12 +54,12 @@ export function Composer({
         placeholder={disabled ? "Reconectando…" : "Escreva uma mensagem"}
         aria-label="Mensagem"
         autoComplete="off"
-        className="focus-ring flex-1 rounded-lg border border-ink-600 bg-ink-800 px-4 py-2.5 text-sm text-paper-100 placeholder:text-paper-400/60 disabled:opacity-50"
+        className="focus-ring flex-1 border border-rule bg-paper px-3.5 py-2.5 text-sm text-ink transition-colors placeholder:text-muted/70 hover:border-rule-strong focus:border-signal disabled:opacity-50"
       />
       <button
         type="submit"
         disabled={disabled}
-        className="focus-ring rounded-lg bg-gold-500 px-4 py-2.5 text-sm font-medium text-ink-950 transition-opacity disabled:opacity-40"
+        className="focus-ring bg-signal px-4 py-2.5 text-sm font-medium text-surface transition-opacity hover:opacity-90 disabled:opacity-40"
       >
         Enviar
       </button>
