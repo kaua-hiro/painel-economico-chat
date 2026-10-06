@@ -168,6 +168,33 @@ HTTPS, redirecionamento HTTP→HTTPS e backup do banco são responsabilidade do 
 deploy (proxy/plataforma). O HSTS já é enviado pela aplicação em produção, mas só tem
 efeito atrás de TLS. Defina `ALLOWED_ORIGINS` com o domínio real.
 
+## Deploy
+
+O app roda como **um processo Node de longa duração** servindo o Next.js e o Socket.IO
+juntos. Isso descarta hospedagem estática (GitHub Pages) e torna o Render a escolha
+natural: `render.yaml` declara o serviço web e um Postgres gerenciado, e o Render cria os
+dois juntos injetando a `DATABASE_URL`.
+
+```
+Render → New → Blueprint → selecionar este repositório → Apply
+```
+
+**Por que não Vercel.** A Vercel suporta WebSocket, mas a própria documentação avisa que
+conexões novas não caem necessariamente na mesma instância de função. Como a presença e o
+broadcast de sala vivem na memória do processo, dois visitantes em instâncias diferentes
+não se enxergariam — seria preciso um adaptador de Redis e um repensar da presença. O
+Render preserva a arquitetura de um processo registrada acima.
+
+**Banco em dois schemas.** `prisma/schema.prisma` continua SQLite para o desenvolvimento
+local, sem exigir banco instalado na máquina; `prisma/production/schema.prisma` é o mesmo
+modelo em PostgreSQL, com migração própria. O build e o start em produção apontam para o
+segundo via `--schema`. A duplicação é de dez linhas e o preço de manter o setup local em
+um comando — se os dois divergirem, o `migrate deploy` falha no deploy, não em produção.
+
+**Depois do primeiro deploy.** Confirme que `ALLOWED_ORIGINS` tem o domínio real que o
+Render atribuiu. O servidor recusa subir sem essa variável, e com o valor errado o
+handshake do WebSocket é recusado — o chat conecta e não troca mensagem.
+
 ## Fonte dos dados
 
 [API de Dados Abertos do Banco Central do Brasil](https://dadosabertos.bcb.gov.br/) —

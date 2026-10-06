@@ -1,0 +1,58 @@
+# Blueprint do Render: sobe o app inteiro em um servico so, do jeito que ele
+# foi desenhado -- um processo Node de longa duracao servindo o Next.js e o
+# Socket.IO juntos, mais um Postgres gerenciado.
+#
+# Por que Render e nao Vercel: a Vercel suporta WebSocket, mas conexoes novas
+# nao caem necessariamente na mesma instancia de funcao. Como a presenca e o
+# broadcast de sala vivem na memoria do processo, dois visitantes em instancias
+# diferentes nao se enxergariam -- seria preciso adaptador de Redis. Aqui o
+# processo e unico e a arquitetura do projeto fica intacta.
+#
+# Como aplicar: Render -> New -> Blueprint -> escolher este repositorio.
+# O banco e o servico sao criados juntos, e a DATABASE_URL e injetada sozinha.
+
+databases:
+  - name: painel-economico-chat-db
+    databaseName: painel_economico_chat
+    user: painel
+    plan: free
+
+services:
+  - type: web
+    name: painel-economico-chat
+    runtime: node
+    plan: free
+    region: oregon
+
+    # --include=dev e obrigatorio: o Render define NODE_ENV=production, e sem
+    # isso o npm pula as devDependencies. O processo depende de tsx em runtime
+    # (o start roda server.ts direto) e o build depende de next e typescript.
+    buildCommand: npm ci --include=dev && npx prisma generate --schema=prisma/production/schema.prisma && npm run build
+
+    # migrate deploy aplica apenas migracoes ja versionadas, nunca gera nem
+    # apaga nada -- e o comando correto para producao.
+    startCommand: npx prisma migrate deploy --schema=prisma/production/schema.prisma && npm start
+
+    healthCheckPath: /
+
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: painel-economico-chat-db
+          property: connectionString
+
+      # Falha fechada: o servidor recusa subir em producao sem esta lista.
+      # O valor assume o dominio padrao do Render para este nome de servico.
+      # Se o Render atribuir outro hostname (nome ja usado por terceiro),
+      # corrija esta variavel no painel antes do primeiro deploy.
+      - key: ALLOWED_ORIGINS
+        value: https://painel-economico-chat.onrender.com
+
+      - key: NODE_VERSION
+        value: "22"
+
+      # Opcional. Sem ela o assistente @bcb responde pelo motor deterministico,
+      # que le as mesmas series do Banco Central. Com ela, as respostas passam
+      # a vir da Claude API. Marcada como sync:false para nao versionar segredo.
+      - key: ANTHROPIC_API_KEY
+        sync: false
