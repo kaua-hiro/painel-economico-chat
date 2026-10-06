@@ -175,8 +175,8 @@
       mesmos números do painel.
     </p>
     <div class="actions">
-      <a class="btn primary" id="live" href="#hospedagem" aria-disabled="true">
-        App ao vivo — em implantação
+      <a class="btn primary" id="live" href="https://painel-economico-chat.onrender.com">
+        Abrir o app ao vivo
       </a>
       <a class="btn" href="https://github.com/kaua-hiro/painel-economico-chat">
         Código no GitHub
@@ -331,17 +331,23 @@
       <p class="eyebrow">Incompatibilidade de modelo de hospedagem</p>
       <h3>GitHub Pages serve arquivos estáticos — e este projeto precisa de processo</h3>
       <p>
+        <strong>O chat funciona de verdade:</strong> abra o app em duas abas com apelidos
+        diferentes e mencione <code>@bcb</code> para o assistente responder com os números
+        do Banco Central. A primeira visita pode levar alguns segundos — o plano gratuito
+        do Render suspende o processo depois de um período sem acesso.
+      </p>
+      <p>
         O chat depende de um processo Node vivo mantendo as conexões WebSocket abertas, o
         painel e o endpoint do ticker são renderizados sob demanda, e as mensagens são
         gravadas em banco. No Pages não há Node, não há processo persistente e o
         filesystem é somente leitura: o chat, o assistente e o ticker não funcionariam.
       </p>
       <p>
-        Então a divisão é deliberada: o <strong>app completo</strong> roda em plataforma
-        com processo persistente, e o Pages hospeda <strong>esta vitrine</strong>. A
-        limitação está escrita aqui porque reconhecer a restrição da plataforma faz parte
-        da engenharia — o registro completo está no
-        <a href="https://github.com/kaua-hiro/painel-economico-chat/issues/21" style="color:var(--gold-400)">issue de deploy</a>.
+        Então a divisão é deliberada: o <strong>app completo</strong> roda no
+        <a href="https://painel-economico-chat.onrender.com" style="color:var(--gold-400)">Render</a>,
+        em processo persistente com Postgres gerenciado, e o Pages hospeda
+        <strong>esta vitrine</strong>. A limitação está escrita aqui porque reconhecer a
+        restrição da plataforma faz parte da engenharia.
       </p>
     </div>
   </div>
