@@ -1,85 +1,114 @@
 import Link from "next/link";
 
+/**
+ * O herói é a tese do projeto: as duas metades não são features paralelas, uma
+ * alimenta a outra. Por isso a composição é um par de células dividindo o mesmo
+ * fio, com a terceira célula embaixo explicando o que as liga — a estrutura
+ * conta a arquitetura antes do texto contar.
+ */
+
+const SERIES = [
+  { code: "432", label: "Selic" },
+  { code: "12", label: "CDI" },
+  { code: "433", label: "IPCA" },
+  { code: "1", label: "Dólar PTAX" },
+];
+
 export default function Home() {
   return (
     <div className="mx-auto max-w-6xl px-6">
-      <section className="flex flex-col gap-6 border-b border-ink-700 py-20">
-        <span className="font-mono text-xs tracking-[0.2em] text-gold-500 uppercase">
-          Projeto de portfólio — engenharia full-stack
-        </span>
-        <h1 className="font-display max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-paper-100 sm:text-6xl">
-          Dados econômicos de verdade.{" "}
-          <span className="text-gold-500">Conversas em tempo real.</span>
+      <section className="py-20 sm:py-28">
+        <p className="label">Projeto de portfólio — engenharia full‑stack</p>
+
+        <h1 className="font-display mt-6 max-w-4xl text-[2.5rem] leading-[0.98] font-semibold tracking-[-0.035em] text-balance sm:text-6xl lg:text-7xl">
+          Dado público do Banco Central,
+          <br />
+          <span className="text-signal">lido em tempo real.</span>
         </h1>
-        <p className="max-w-2xl text-lg text-paper-400">
-          Um painel que consome a API pública do Banco Central do Brasil e transforma
-          séries da Selic, CDI, IPCA e dólar em leitura útil — ao lado de um chat
-          multi-sala com WebSockets, presença e indicador de digitação.
+
+        <p className="mt-7 max-w-xl text-[1.0625rem] leading-relaxed text-muted">
+          Um painel que transforma as séries do Banco Central em leitura útil, e um chat
+          onde um assistente responde pelos mesmos números. As duas metades consomem a
+          mesma camada de domínio.
+        </p>
+
+        <div className="mt-10 flex flex-wrap items-center gap-3">
+          <Link
+            href="/dashboard"
+            className="focus-ring bg-signal px-5 py-3 text-sm font-medium text-surface transition-opacity hover:opacity-90"
+          >
+            Abrir o painel
+          </Link>
+          <Link
+            href="/chat"
+            className="focus-ring border border-rule-strong px-5 py-3 text-sm font-medium text-ink transition-colors hover:border-signal hover:text-signal"
+          >
+            Entrar no chat
+          </Link>
+        </div>
+
+        <ul className="mt-14 flex flex-wrap items-baseline gap-x-8 gap-y-3">
+          {SERIES.map((serie) => (
+            <li key={serie.code} className="flex items-baseline gap-2">
+              <span className="font-mono text-[0.6875rem] text-muted">
+                SGS {serie.code}
+              </span>
+              <span className="text-sm text-ink">{serie.label}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="grid-rules grid sm:grid-cols-2">
+        <article className="bg-surface p-8 sm:p-10">
+          <p className="label">Painel</p>
+          <h2 className="font-display mt-4 text-2xl font-semibold tracking-[-0.02em]">
+            Indicadores com leitura derivada
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-muted">
+            Selic, CDI, IPCA e dólar PTAX com tendência e histórico. Acima do dado bruto,
+            os cruzamentos que respondem o que ele significa: juro real, distância da meta
+            de inflação, rendimento de um valor no CDI.
+          </p>
+          <Link
+            href="/dashboard"
+            className="focus-ring mt-6 inline-block text-sm font-medium text-signal underline decoration-signal/30 underline-offset-4 transition-colors hover:decoration-signal"
+          >
+            Ver os indicadores
+          </Link>
+        </article>
+
+        <article className="bg-surface p-8 sm:p-10">
+          <p className="label">Chat</p>
+          <h2 className="font-display mt-4 text-2xl font-semibold tracking-[-0.02em]">
+            Salas em tempo real com o <span className="text-signal">@bcb</span>
+          </h2>
+          <p className="mt-3 text-sm leading-relaxed text-muted">
+            Socket.IO sobre servidor próprio, com presença, indicador de digitação e
+            histórico persistido. Mencione o assistente e ele responde pelas mesmas séries
+            que o painel consome.
+          </p>
+          <Link
+            href="/chat"
+            className="focus-ring mt-6 inline-block text-sm font-medium text-signal underline decoration-signal/30 underline-offset-4 transition-colors hover:decoration-signal"
+          >
+            Abrir uma sala
+          </Link>
+        </article>
+      </section>
+
+      <section className="border-x border-b border-rule bg-sunk px-8 py-10 sm:px-10">
+        <p className="label">O que liga as duas metades</p>
+        <p className="mt-4 max-w-3xl text-[1.0625rem] leading-relaxed text-ink">
+          O assistente não conversa sobre economia: ele lê o mesmo instrumento que o painel
+          mostra. A camada de domínio em <span className="font-mono text-sm">lib/</span> não
+          conhece React nem rotas, e é consumida tanto pelos Server Components do painel
+          quanto pelo servidor Socket.IO do chat — então o número que aparece no card é,
+          literalmente, o número que o <span className="text-signal">@bcb</span> responde.
         </p>
       </section>
 
-      <section className="grid gap-6 py-16 sm:grid-cols-2">
-        <Link
-          href="/dashboard"
-          className="focus-ring group flex flex-col justify-between gap-6 rounded-xl border border-ink-700 bg-ink-900 p-8 transition-colors hover:border-gold-500"
-        >
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-xs tracking-widest text-paper-400 uppercase">
-              Painel
-            </span>
-            <span className="text-gold-500 transition-transform group-hover:translate-x-1">
-              →
-            </span>
-          </div>
-          <div>
-            <h2 className="font-display text-2xl font-semibold text-paper-100">
-              Indicadores do Banco Central
-            </h2>
-            <p className="mt-2 text-sm text-paper-400">
-              Selic, CDI, IPCA e dólar PTAX com variação, tendência e histórico —
-              atualizados direto da API do BCB.
-            </p>
-          </div>
-        </Link>
-
-        <Link
-          href="/chat"
-          className="focus-ring group flex flex-col justify-between gap-6 rounded-xl border border-ink-700 bg-ink-900 p-8 transition-colors hover:border-gold-500"
-        >
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-xs tracking-widest text-paper-400 uppercase">
-              Chat
-            </span>
-            <span className="text-gold-500 transition-transform group-hover:translate-x-1">
-              →
-            </span>
-          </div>
-          <div>
-            <h2 className="font-display text-2xl font-semibold text-paper-100">
-              Mensagens em tempo real
-            </h2>
-            <p className="mt-2 text-sm text-paper-400">
-              Salas com Socket.IO, histórico persistido, presença de usuários e
-              indicador de digitação ao vivo.
-            </p>
-          </div>
-        </Link>
-      </section>
-
-      <section className="grid gap-8 border-t border-ink-700 py-16 sm:grid-cols-3">
-        <StackItem label="Frontend" value="Next.js · TypeScript · Tailwind" />
-        <StackItem label="Tempo real" value="Socket.IO sobre servidor Node" />
-        <StackItem label="Dados" value="Prisma + SQLite · API BCB (SGS)" />
-      </section>
-    </div>
-  );
-}
-
-function StackItem({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="font-mono text-xs tracking-widest text-paper-400 uppercase">{label}</p>
-      <p className="mt-1 text-sm text-paper-100">{value}</p>
+      <div className="h-20" />
     </div>
   );
 }

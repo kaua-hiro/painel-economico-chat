@@ -19,11 +19,14 @@ export function NicknameGate({ onSubmit }: { onSubmit: (nickname: string) => voi
         setError(null);
         onSubmit(result.value);
       }}
-      className="mx-auto flex w-full max-w-md flex-col gap-4 rounded-xl border border-ink-700 bg-ink-900 p-8"
+      className="mx-auto flex w-full max-w-md flex-col gap-5 border-t-2 border-signal border-x border-b border-x-rule border-b-rule bg-surface p-8"
     >
       <div>
-        <h2 className="font-display text-xl font-semibold">Escolha um apelido</h2>
-        <p className="mt-1 text-sm text-paper-400">
+        <p className="label">Identificação</p>
+        <h2 className="font-display mt-3 text-2xl font-semibold tracking-[-0.02em]">
+          Escolha um apelido
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-muted">
           Ele identifica suas mensagens nas salas e fica salvo neste navegador.
         </p>
       </div>
@@ -39,10 +42,10 @@ export function NicknameGate({ onSubmit }: { onSubmit: (nickname: string) => voi
         aria-label="Apelido"
         autoComplete="off"
         aria-invalid={error !== null}
-        className="focus-ring rounded-lg border border-ink-600 bg-ink-800 px-4 py-2.5 text-sm text-paper-100 placeholder:text-paper-400/60"
+        className="focus-ring border border-rule bg-paper px-3.5 py-2.5 text-sm text-ink transition-colors placeholder:text-muted/70 hover:border-rule-strong focus:border-signal"
       />
       {error && (
-        <p role="alert" className="text-xs text-signal-down">
+        <p role="alert" className="text-xs text-down">
           {error}
         </p>
       )}
@@ -51,7 +54,7 @@ export function NicknameGate({ onSubmit }: { onSubmit: (nickname: string) => voi
           renderizando o mesmo atributo. */}
       <button
         type="submit"
-        className="focus-ring rounded-lg bg-gold-500 px-4 py-2.5 text-sm font-medium text-ink-950"
+        className="focus-ring bg-signal px-4 py-2.5 text-sm font-medium text-surface transition-opacity hover:opacity-90"
       >
         Entrar no chat
       </button>
